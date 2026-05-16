@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'themes/app_theme.dart';
+import 'screens/login_screen.dart';
 
 void main() {
   runApp(const MindStepApp());
@@ -14,16 +15,7 @@ class MindStepApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'MindStep',
       theme: AppTheme.lightTheme,
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('MindStep'),
-        ),
-        body: const Center(
-          child: Text(
-            'Bem-vindo ao MindStep 🧠',
-          ),
-        ),
-      ),
+      home: const LoginScreen(),
     );
   }
 }
