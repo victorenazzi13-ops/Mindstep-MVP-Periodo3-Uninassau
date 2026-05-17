@@ -26,6 +26,57 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     });
   }
 
+  void removeStep(int index) {
+    setState(() {
+      steps.removeAt(index);
+    });
+  }
+
+  void toggleStep(int index, bool value) {
+    setState(() {
+      steps[index]['done'] = value;
+    });
+  }
+
+  void editStep(int index) {
+    TextEditingController controller = TextEditingController(
+      text: steps[index]['title'],
+    );
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Editar microetapa'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(
+              hintText: 'Editar microetapa',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (controller.text.isNotEmpty) {
+                  setState(() {
+                    steps[index]['title'] = controller.text;
+                  });
+                }
+
+                Navigator.pop(context);
+              },
+              child: const Text('Salvar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void showAddStepDialog() {
     TextEditingController controller = TextEditingController();
 
@@ -50,6 +101,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
                 if (controller.text.isNotEmpty) {
                   addStep(controller.text);
                 }
+
                 Navigator.pop(context);
               },
               child: const Text('Adicionar'),
@@ -60,10 +112,8 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     );
   }
 
-  void toggleStep(int index, bool value) {
-    setState(() {
-      steps[index]['done'] = value;
-    });
+  int get completedSteps {
+    return steps.where((step) => step['done'] == true).length;
   }
 
   @override
@@ -72,21 +122,64 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: ListView.builder(
+
+      body: Padding(
         padding: const EdgeInsets.all(20),
-        itemCount: steps.length,
-        itemBuilder: (context, index) {
-          return Card(
-            child: CheckboxListTile(
-              title: Text(steps[index]['title']),
-              value: steps[index]['done'],
-              onChanged: (value) {
-                toggleStep(index, value!);
-              },
+
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '$completedSteps de ${steps.length} concluídas',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          );
-        },
+
+            const SizedBox(height: 20),
+
+            Expanded(
+              child: ListView.builder(
+                itemCount: steps.length,
+                itemBuilder: (context, index) {
+                  return Card(
+                    child: ListTile(
+                      leading: Checkbox(
+                        value: steps[index]['done'],
+                        onChanged: (value) {
+                          toggleStep(index, value!);
+                        },
+                      ),
+
+                      title: Text(steps[index]['title']),
+
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit),
+                            onPressed: () {
+                              editStep(index);
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () {
+                              removeStep(index);
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
+
       floatingActionButton: FloatingActionButton(
         onPressed: showAddStepDialog,
         child: const Icon(Icons.add),
