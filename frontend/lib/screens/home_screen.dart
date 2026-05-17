@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'routine_detail_screen.dart';
 import 'create_routine_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -10,14 +11,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Map<String, String>> routines = [
-    {
-      'title': 'Estudar Flutter',
-      'description': 'Praticar telas e componentes',
-    },
-    {
-      'title': 'Tomar água',
-      'description': 'Lembrar durante o dia',
-    },
+    {'title': 'Estudar Flutter', 'description': 'Praticar telas e componentes'},
+    {'title': 'Tomar água', 'description': 'Lembrar durante o dia'},
   ];
 
   void addRoutine(Map<String, String> routine) {
@@ -29,9 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void openCreateRoutineScreen() async {
     final newRoutine = await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const CreateRoutineScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const CreateRoutineScreen()),
     );
 
     if (newRoutine != null) {
@@ -45,9 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('MindStep'),
-      ),
+      appBar: AppBar(title: const Text('MindStep')),
 
       body: Padding(
         padding: const EdgeInsets.all(24),
@@ -82,11 +73,22 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               child: ListView.builder(
                 itemCount: routines.length,
-
                 itemBuilder: (context, index) {
-                  return routineCard(
-                    routines[index]['title']!,
-                    routines[index]['description']!,
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RoutineDetailScreen(
+                            title: routines[index]['title']!,
+                          ),
+                        ),
+                      );
+                    },
+                    child: routineCard(
+                      routines[index]['title']!,
+                      routines[index]['description']!,
+                    ),
                   );
                 },
               ),
@@ -142,10 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 Text(
                   description,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[700],
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                 ),
               ],
             ),
