@@ -1,7 +1,46 @@
 import 'package:flutter/material.dart';
+import 'create_routine_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  List<Map<String, String>> routines = [
+    {
+      'title': 'Estudar Flutter',
+      'description': 'Praticar telas e componentes',
+    },
+    {
+      'title': 'Tomar água',
+      'description': 'Lembrar durante o dia',
+    },
+  ];
+
+  void addRoutine(Map<String, String> routine) {
+    setState(() {
+      routines.add(routine);
+    });
+  }
+
+  void openCreateRoutineScreen() async {
+    final newRoutine = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CreateRoutineScreen(),
+      ),
+    );
+
+    if (newRoutine != null) {
+      addRoutine({
+        'title': newRoutine['title'],
+        'description': newRoutine['description'],
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,111 +60,51 @@ class HomeScreen extends StatelessWidget {
 
             const Text(
               'Olá, Victor 👋',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 10),
 
             Text(
               'Vamos organizar seu dia com calma.',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[700],
-              ),
-            ),
-
-            const SizedBox(height: 30),
-
-            Container(
-              padding: const EdgeInsets.all(20),
-
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                  ),
-                ],
-              ),
-
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-                children: [
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-
-                    children: [
-                      Text(
-                        'Tarefas concluídas',
-                        style: TextStyle(
-                          fontSize: 16,
-                        ),
-                      ),
-
-                      SizedBox(height: 8),
-
-                      Text(
-                        '2 de 5',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  CircularProgressIndicator(
-                    value: 0.4,
-                    strokeWidth: 8,
-                  ),
-                ],
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey[700]),
             ),
 
             const SizedBox(height: 30),
 
             const Text(
-              'Tarefas de hoje',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
+              'Minhas rotinas',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 20),
 
-            taskCard(
-              'Estudar Flutter',
-              'Prioridade alta',
-            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: routines.length,
 
-            const SizedBox(height: 15),
-
-            taskCard(
-              'Tomar água',
-              'Pequena pausa',
+                itemBuilder: (context, index) {
+                  return routineCard(
+                    routines[index]['title']!,
+                    routines[index]['description']!,
+                  );
+                },
+              ),
             ),
           ],
         ),
       ),
 
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-
+        onPressed: openCreateRoutineScreen,
         child: const Icon(Icons.add),
       ),
     );
   }
 
-  Widget taskCard(String title, String subtitle) {
+  Widget routineCard(String title, String description) {
     return Container(
+      margin: const EdgeInsets.only(bottom: 15),
       padding: const EdgeInsets.all(18),
 
       decoration: BoxDecoration(
@@ -142,10 +121,9 @@ class HomeScreen extends StatelessWidget {
 
       child: Row(
         children: [
-          Checkbox(
-            value: false,
-            onChanged: (value) {},
-          ),
+          const Icon(Icons.checklist, size: 28),
+
+          const SizedBox(width: 12),
 
           Expanded(
             child: Column(
@@ -160,11 +138,12 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 5),
+                const SizedBox(height: 4),
 
                 Text(
-                  subtitle,
+                  description,
                   style: TextStyle(
+                    fontSize: 14,
                     color: Colors.grey[700],
                   ),
                 ),
