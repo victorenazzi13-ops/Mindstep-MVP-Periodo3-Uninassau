@@ -5,12 +5,14 @@ require('dotenv').config();
 const authRoutes = require('./routes/authRoutes');
 const routineRoutes = require('./routes/routineRoutes');
 const authMiddleware = require('./middlewares/authMiddleware');
+const stepRoutes = require('./routes/stepRoutes');
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 app.use('/api/routines', routineRoutes);
+app.use('/api/steps', stepRoutes);
 
 app.use('/api/auth', authRoutes);
 
