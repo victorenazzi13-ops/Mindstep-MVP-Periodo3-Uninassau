@@ -1,7 +1,78 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
 
-class RegisterScreen extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+import '../services/api_service.dart';
+
+class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
+
+  @override
+  State<RegisterScreen> createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
+  final nameController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+
+  bool isLoading = false;
+
+  Future<void> registerUser() async {
+    if (nameController.text.isEmpty ||
+        emailController.text.isEmpty ||
+        passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Preencha todos os campos')),
+      );
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    final url = Uri.parse('${ApiService.baseUrl}/auth/register');
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'name': nameController.text,
+        'email': emailController.text,
+        'password': passwordController.text,
+      }),
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      isLoading = false;
+    });
+
+    if (response.statusCode == 201) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Cadastro realizado com sucesso')),
+      );
+
+      Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Erro ao cadastrar usuário')),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +107,7 @@ class RegisterScreen extends StatelessWidget {
                 const SizedBox(height: 40),
 
                 TextField(
+                  controller: nameController,
                   decoration: InputDecoration(
                     labelText: 'Nome',
                     border: OutlineInputBorder(
@@ -47,6 +119,7 @@ class RegisterScreen extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 TextField(
+                  controller: emailController,
                   decoration: InputDecoration(
                     labelText: 'E-mail',
                     border: OutlineInputBorder(
@@ -58,6 +131,7 @@ class RegisterScreen extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 TextField(
+                  controller: passwordController,
                   obscureText: true,
                   decoration: InputDecoration(
                     labelText: 'Senha',
@@ -73,10 +147,10 @@ class RegisterScreen extends StatelessWidget {
                   width: double.infinity,
                   height: 55,
                   child: ElevatedButton(
-                    onPressed: () {},
-                    child: const Text(
-                      'Cadastrar',
-                      style: TextStyle(fontSize: 18),
+                    onPressed: isLoading ? null : registerUser,
+                    child: Text(
+                      isLoading ? 'Cadastrando...' : 'Cadastrar',
+                      style: const TextStyle(fontSize: 18),
                     ),
                   ),
                 ),

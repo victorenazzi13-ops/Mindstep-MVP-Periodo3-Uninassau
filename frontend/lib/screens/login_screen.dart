@@ -1,8 +1,80 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+import '../services/api_service.dart';
+import 'home_screen.dart';
 import 'register_screen.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+
+  bool isLoading = false;
+
+  Future<void> loginUser() async {
+    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Preencha e-mail e senha')),
+      );
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    final url = Uri.parse('${ApiService.baseUrl}/auth/login');
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'email': emailController.text,
+        'password': passwordController.text,
+      }),
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      isLoading = false;
+    });
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      ApiService.token = data['token'];
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const HomeScreen(),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('E-mail ou senha inválidos')),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +108,7 @@ class LoginScreen extends StatelessWidget {
               const SizedBox(height: 50),
 
               TextField(
+                controller: emailController,
                 decoration: InputDecoration(
                   labelText: 'E-mail',
                   border: OutlineInputBorder(
@@ -47,6 +120,7 @@ class LoginScreen extends StatelessWidget {
               const SizedBox(height: 20),
 
               TextField(
+                controller: passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
                   labelText: 'Senha',
@@ -62,10 +136,10 @@ class LoginScreen extends StatelessWidget {
                 width: double.infinity,
                 height: 55,
                 child: ElevatedButton(
-                  onPressed: () {},
-                  child: const Text(
-                    'Entrar',
-                    style: TextStyle(fontSize: 18),
+                  onPressed: isLoading ? null : loginUser,
+                  child: Text(
+                    isLoading ? 'Entrando...' : 'Entrar',
+                    style: const TextStyle(fontSize: 18),
                   ),
                 ),
               ),
