@@ -1,6 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'routine_detail_screen.dart';
+import 'package:http/http.dart' as http;
+
+import '../services/api_service.dart';
 import 'create_routine_screen.dart';
+import 'routine_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -10,41 +15,111 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Map<String, String>> routines = [
-    {'title': 'Estudar Flutter', 'description': 'Praticar telas e componentes'},
-    {'title': 'Tomar água', 'description': 'Lembrar durante o dia'},
-  ];
+  List<dynamic> routines = [];
+  bool isLoading = true;
 
-  void addRoutine(Map<String, String> routine) {
-    setState(() {
-      routines.add(routine);
-    });
+  @override
+  void initState() {
+    super.initState();
+    fetchRoutines();
   }
 
-  void updateRoutine(int index, String title, String description) {
-    setState(() {
-      routines[index]['title'] = title;
-      routines[index]['description'] = description;
-    });
+  Future<void> fetchRoutines() async {
+    final url = Uri.parse('${ApiService.baseUrl}/routines');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer ${ApiService.token}',
+      },
+    );
+
+    if (!mounted) return;
+
+    if (response.statusCode == 200) {
+      setState(() {
+        routines = jsonDecode(response.body);
+        isLoading = false;
+      });
+    } else {
+      setState(() {
+        isLoading = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Erro ao carregar rotinas')),
+      );
+    }
   }
 
-  void removeRoutine(int index) {
-    setState(() {
-      routines.removeAt(index);
-    });
+  Future<void> createRoutine(String title, String description) async {
+    final url = Uri.parse('${ApiService.baseUrl}/routines');
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${ApiService.token}',
+      },
+      body: jsonEncode({
+        'title': title,
+        'description': description,
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      fetchRoutines();
+    }
+  }
+
+  Future<void> updateRoutine(int id, String title, String description) async {
+    final url = Uri.parse('${ApiService.baseUrl}/routines/$id');
+
+    final response = await http.put(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${ApiService.token}',
+      },
+      body: jsonEncode({
+        'title': title,
+        'description': description,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      fetchRoutines();
+    }
+  }
+
+  Future<void> deleteRoutine(int id) async {
+    final url = Uri.parse('${ApiService.baseUrl}/routines/$id');
+
+    final response = await http.delete(
+      url,
+      headers: {
+        'Authorization': 'Bearer ${ApiService.token}',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      fetchRoutines();
+    }
   }
 
   void openCreateRoutineScreen() async {
     final newRoutine = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const CreateRoutineScreen()),
+      MaterialPageRoute(
+        builder: (context) => const CreateRoutineScreen(),
+      ),
     );
 
     if (newRoutine != null) {
-      addRoutine({
-        'title': newRoutine['title'],
-        'description': newRoutine['description'],
-      });
+      createRoutine(
+        newRoutine['title'],
+        newRoutine['description'],
+      );
     }
   }
 
@@ -54,7 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     final descriptionController = TextEditingController(
-      text: routines[index]['description'],
+      text: routines[index]['description'] ?? '',
     );
 
     showDialog(
@@ -88,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () {
                 if (titleController.text.isNotEmpty) {
                   updateRoutine(
-                    index,
+                    routines[index]['id'],
                     titleController.text,
                     descriptionController.text,
                   );
@@ -118,7 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             ElevatedButton(
               onPressed: () {
-                removeRoutine(index);
+                deleteRoutine(routines[index]['id']);
                 Navigator.pop(context);
               },
               child: const Text('Excluir'),
@@ -134,7 +209,7 @@ class _HomeScreenState extends State<HomeScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => RoutineDetailScreen(
-          title: routines[index]['title']!,
+          title: routines[index]['title'],
         ),
       ),
     );
@@ -146,49 +221,55 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('MindStep'),
       ),
-
       body: Padding(
         padding: const EdgeInsets.all(24),
-
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-
           children: [
             const SizedBox(height: 10),
-
             const Text(
-              'Olá, Victor 👋',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              'Olá 👋',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-
             const SizedBox(height: 10),
-
             Text(
               'Vamos organizar seu dia com calma.',
-              style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[700],
+              ),
             ),
-
             const SizedBox(height: 30),
-
             const Text(
               'Minhas rotinas',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-
-            const SizedBox(height: 20),
-
-            Expanded(
-              child: ListView.builder(
-                itemCount: routines.length,
-                itemBuilder: (context, index) {
-                  return routineCard(index);
-                },
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
               ),
+            ),
+            const SizedBox(height: 20),
+            Expanded(
+              child: isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  : routines.isEmpty
+                      ? const Center(
+                          child: Text('Nenhuma rotina cadastrada ainda.'),
+                        )
+                      : ListView.builder(
+                          itemCount: routines.length,
+                          itemBuilder: (context, index) {
+                            return routineCard(index);
+                          },
+                        ),
             ),
           ],
         ),
       ),
-
       floatingActionButton: FloatingActionButton(
         onPressed: openCreateRoutineScreen,
         child: const Icon(Icons.add),
@@ -197,19 +278,17 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget routineCard(int index) {
-    final title = routines[index]['title']!;
-    final description = routines[index]['description']!;
+    final title = routines[index]['title'];
+    final description = routines[index]['description'] ?? '';
 
     return GestureDetector(
       onTap: () => openRoutineDetail(index),
       child: Container(
         margin: const EdgeInsets.only(bottom: 15),
         padding: const EdgeInsets.all(18),
-
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),
@@ -217,17 +296,13 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-
         child: Row(
           children: [
             const Icon(Icons.checklist, size: 28),
-
             const SizedBox(width: 12),
-
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-
                 children: [
                   Text(
                     title,
@@ -236,22 +311,21 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-
                   const SizedBox(height: 4),
-
                   Text(
                     description,
-                    style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[700],
+                    ),
                   ),
                 ],
               ),
             ),
-
             IconButton(
               icon: const Icon(Icons.edit),
               onPressed: () => showEditRoutineDialog(index),
             ),
-
             IconButton(
               icon: const Icon(Icons.delete),
               onPressed: () => confirmDeleteRoutine(index),
