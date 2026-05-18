@@ -209,6 +209,7 @@ class _HomeScreenState extends State<HomeScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => RoutineDetailScreen(
+          routineId: routines[index]['id'],
           title: routines[index]['title'],
         ),
       ),

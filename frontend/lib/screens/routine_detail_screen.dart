@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
 class RoutineDetailScreen extends StatefulWidget {
+  final int routineId;
   final String title;
 
   const RoutineDetailScreen({
     super.key,
+    required this.routineId,
     required this.title,
   });
 
