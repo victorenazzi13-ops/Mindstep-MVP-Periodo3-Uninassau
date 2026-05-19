@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
-import 'themes/app_theme.dart';
-import 'screens/login_screen.dart';
 
-void main() {
+import 'screens/home_screen.dart';
+import 'screens/login_screen.dart';
+import 'services/api_service.dart';
+import 'themes/app_theme.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await ApiService.loadSession();
+
   runApp(const MindStepApp());
 }
 
@@ -15,7 +22,9 @@ class MindStepApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'MindStep',
       theme: AppTheme.lightTheme,
-      home: const LoginScreen(),
+      home: ApiService.token != null
+          ? const HomeScreen()
+          : const LoginScreen(),
     );
   }
 }

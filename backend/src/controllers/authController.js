@@ -9,6 +9,13 @@ exports.register = async (req, res) => {
     'SELECT * FROM users WHERE email = ?',
     [email],
     async (err, result) => {
+      if (err) {
+        return res.status(500).json({
+          message: 'Erro ao buscar usuário',
+          error: err,
+        });
+      }
+
       if (result.length > 0) {
         return res.status(400).json({
           message: 'Email já cadastrado',
@@ -22,7 +29,10 @@ exports.register = async (req, res) => {
         [name, email, hashedPassword],
         (err) => {
           if (err) {
-            return res.status(500).json(err);
+            return res.status(500).json({
+              message: 'Erro ao cadastrar usuário',
+              error: err,
+            });
           }
 
           res.status(201).json({
@@ -41,6 +51,13 @@ exports.login = (req, res) => {
     'SELECT * FROM users WHERE email = ?',
     [email],
     async (err, result) => {
+      if (err) {
+        return res.status(500).json({
+          message: 'Erro ao buscar usuário',
+          error: err,
+        });
+      }
+
       if (result.length === 0) {
         return res.status(400).json({
           message: 'Usuário não encontrado',
@@ -71,6 +88,11 @@ exports.login = (req, res) => {
       res.json({
         message: 'Login realizado com sucesso',
         token,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+        },
       });
     }
   );

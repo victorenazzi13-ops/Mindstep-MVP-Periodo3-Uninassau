@@ -20,8 +20,10 @@ class _HomeScreenState extends State<HomeScreen> {
   List<dynamic> routines = [];
   bool isLoading = true;
 
-  void logout() {
-  ApiService.token = null;
+  Future<void> logout() async {
+  await ApiService.clearSession();
+
+  if (!mounted) return;
 
   Navigator.pushReplacement(
     context,
@@ -307,13 +309,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
       const SizedBox(width: 14),
 
-      const Expanded(
+      Expanded(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Olá 👋',
-              style: TextStyle(
+              'Olá, ${ApiService.userName ?? 'usuário'} 👋',
+              style: const TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.bold,
                 color: AppTheme.textColor,

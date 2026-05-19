@@ -52,22 +52,29 @@ class _LoginScreenState extends State<LoginScreen> {
       isLoading = false;
     });
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
+   if (response.statusCode == 200) {
+  final data = jsonDecode(response.body);
 
-      ApiService.token = data['token'];
+  await ApiService.saveSession(
+    data['token'],
+    data['user']['name'],
+  );
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const HomeScreen(),
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('E-mail ou senha inválidos')),
-      );
-    }
+  if (!mounted) return;
+
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const HomeScreen(),
+    ),
+  );
+} else {
+  if (!mounted) return;
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text('E-mail ou senha inválidos')),
+  );
+}
   }
 
   @override
