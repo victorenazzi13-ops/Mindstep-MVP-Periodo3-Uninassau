@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import '../services/api_service.dart';
+import '../themes/app_theme.dart';
 import 'create_routine_screen.dart';
 import 'routine_detail_screen.dart';
+import 'login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,6 +19,17 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<dynamic> routines = [];
   bool isLoading = true;
+
+  void logout() {
+  ApiService.token = null;
+
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const LoginScreen(),
+    ),
+  );
+}
 
   @override
   void initState() {
@@ -144,12 +157,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 controller: titleController,
                 decoration: const InputDecoration(
                   labelText: 'Nome da rotina',
+                  prefixIcon: Icon(Icons.edit_note),
                 ),
               ),
+              const SizedBox(height: 14),
               TextField(
                 controller: descriptionController,
                 decoration: const InputDecoration(
                   labelText: 'Descrição',
+                  prefixIcon: Icon(Icons.notes),
                 ),
               ),
             ],
@@ -192,6 +208,9 @@ class _HomeScreenState extends State<HomeScreen> {
               child: const Text('Cancelar'),
             ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.dangerColor,
+              ),
               onPressed: () {
                 deleteRoutine(routines[index]['id']);
                 Navigator.pop(context);
@@ -219,61 +238,180 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('MindStep'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 10),
-            const Text(
-              'Olá 👋',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-              ),
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: fetchRoutines,
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                header(),
+                const SizedBox(height: 28),
+                summaryCard(),
+                const SizedBox(height: 28),
+                const Text(
+                  'Minhas rotinas',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textColor,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : routines.isEmpty
+                          ? emptyState()
+                          : ListView.builder(
+                              itemCount: routines.length,
+                              itemBuilder: (context, index) {
+                                return routineCard(index);
+                              },
+                            ),
+                ),
+              ],
             ),
-            const SizedBox(height: 10),
-            Text(
-              'Vamos organizar seu dia com calma.',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[700],
-              ),
-            ),
-            const SizedBox(height: 30),
-            const Text(
-              'Minhas rotinas',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(),
-                    )
-                  : routines.isEmpty
-                      ? const Center(
-                          child: Text('Nenhuma rotina cadastrada ainda.'),
-                        )
-                      : ListView.builder(
-                          itemCount: routines.length,
-                          itemBuilder: (context, index) {
-                            return routineCard(index);
-                          },
-                        ),
-            ),
-          ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: openCreateRoutineScreen,
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  Widget header() {
+  return Row(
+    children: [
+      Container(
+        width: 54,
+        height: 54,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [
+              AppTheme.primaryColor,
+              AppTheme.secondaryColor,
+            ],
+          ),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: const Icon(
+          Icons.psychology_alt,
+          color: Colors.white,
+          size: 30,
+        ),
+      ),
+
+      const SizedBox(width: 14),
+
+      const Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Olá 👋',
+              style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textColor,
+              ),
+            ),
+            SizedBox(height: 4),
+            Text(
+              'Organize sua mente, um passo de cada vez.',
+              style: TextStyle(
+                fontSize: 14,
+                color: AppTheme.mutedTextColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+
+      IconButton(
+        onPressed: logout,
+        icon: const Icon(Icons.logout),
+        style: IconButton.styleFrom(
+          backgroundColor: AppTheme.surfaceColor,
+          foregroundColor: AppTheme.textColor,
+          padding: const EdgeInsets.all(14),
+        ),
+      ),
+    ],
+  );
+}
+
+  Widget summaryCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            AppTheme.primaryColor,
+            AppTheme.secondaryColor,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(26),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Seu painel de rotinas',
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            routines.isEmpty
+                ? 'Crie sua primeira rotina e divida em microetapas.'
+                : 'Você tem ${routines.length} rotina(s) cadastrada(s).',
+            style: const TextStyle(
+              fontSize: 14,
+              color: Colors.white70,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget emptyState() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.checklist_rtl,
+            size: 72,
+            color: Colors.white.withValues(alpha: 0.35),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Nenhuma rotina ainda',
+            style: TextStyle(
+              color: AppTheme.textColor,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Toque em “Nova rotina” para começar.',
+            style: TextStyle(
+              color: AppTheme.mutedTextColor,
+              fontSize: 14,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
@@ -285,22 +423,30 @@ class _HomeScreenState extends State<HomeScreen> {
     return GestureDetector(
       onTap: () => openRoutineDetail(index),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 15),
+        margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-            ),
-          ],
+          color: AppTheme.surfaceColor,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.06),
+          ),
         ),
         child: Row(
           children: [
-            const Icon(Icons.checklist, size: 28),
-            const SizedBox(width: 12),
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor.withValues(alpha: 0.16),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(
+                Icons.route,
+                color: AppTheme.primaryColor,
+              ),
+            ),
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -308,28 +454,47 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(
                     title,
                     style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textColor,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 5),
                   Text(
-                    description,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[700],
+                    description.isEmpty ? 'Sem descrição' : description,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppTheme.mutedTextColor,
                     ),
                   ),
                 ],
               ),
             ),
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () => showEditRoutineDialog(index),
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: () => confirmDeleteRoutine(index),
+            PopupMenuButton<String>(
+              color: AppTheme.surfaceColor,
+              icon: const Icon(
+                Icons.more_vert,
+                color: AppTheme.mutedTextColor,
+              ),
+              onSelected: (value) {
+                if (value == 'edit') {
+                  showEditRoutineDialog(index);
+                }
+
+                if (value == 'delete') {
+                  confirmDeleteRoutine(index);
+                }
+              },
+              itemBuilder: (context) => const [
+                PopupMenuItem(
+                  value: 'edit',
+                  child: Text('Editar'),
+                ),
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Text('Excluir'),
+                ),
+              ],
             ),
           ],
         ),

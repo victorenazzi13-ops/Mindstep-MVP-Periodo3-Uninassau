@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import '../services/api_service.dart';
+import '../themes/app_theme.dart';
 
 class RoutineDetailScreen extends StatefulWidget {
   final int routineId;
@@ -124,6 +125,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
             controller: controller,
             decoration: const InputDecoration(
               hintText: 'Digite a microetapa',
+              prefixIcon: Icon(Icons.add_task),
             ),
           ),
           actions: [
@@ -161,6 +163,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
             controller: controller,
             decoration: const InputDecoration(
               hintText: 'Editar microetapa',
+              prefixIcon: Icon(Icons.edit),
             ),
           ),
           actions: [
@@ -174,7 +177,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
                   updateStep(
                     steps[index]['id'],
                     controller.text,
-                    steps[index]['done'] == 1 || steps[index]['done'] == true,
+                    isStepDone(steps[index]),
                   );
                 }
 
@@ -198,81 +201,214 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     return step['done'] == 1 || step['done'] == true;
   }
 
+  double get progress {
+    if (steps.isEmpty) return 0;
+    return completedSteps / steps.length;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '$completedSteps de ${steps.length} concluídas',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            Expanded(
-              child: isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : steps.isEmpty
-                      ? const Center(
-                          child: Text('Nenhuma microetapa cadastrada ainda.'),
-                        )
-                      : ListView.builder(
-                          itemCount: steps.length,
-                          itemBuilder: (context, index) {
-                            final step = steps[index];
-                            final done = isStepDone(step);
-
-                            return Card(
-                              child: ListTile(
-                                leading: Checkbox(
-                                  value: done,
-                                  onChanged: (value) {
-                                    updateStep(
-                                      step['id'],
-                                      step['title'],
-                                      value!,
-                                    );
-                                  },
-                                ),
-                                title: Text(step['title']),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.edit),
-                                      onPressed: () {
-                                        showEditStepDialog(index);
-                                      },
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete),
-                                      onPressed: () {
-                                        deleteStep(step['id']);
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-            ),
-          ],
-        ),
-      ),
       floatingActionButton: FloatingActionButton(
         onPressed: showAddStepDialog,
         child: const Icon(Icons.add),
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              topBar(),
+              const SizedBox(height: 24),
+              progressCard(),
+              const SizedBox(height: 24),
+              const Text(
+                'Microetapas',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textColor,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : steps.isEmpty
+                        ? emptyState()
+                        : ListView.builder(
+                            itemCount: steps.length,
+                            itemBuilder: (context, index) {
+                              final step = steps[index];
+                              final done = isStepDone(step);
+
+                              return stepCard(step, done, index);
+                            },
+                          ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget topBar() {
+    return Row(
+      children: [
+        IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back),
+          style: IconButton.styleFrom(
+            backgroundColor: AppTheme.surfaceColor,
+            foregroundColor: AppTheme.textColor,
+            padding: const EdgeInsets.all(14),
+          ),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Text(
+            widget.title,
+            style: const TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textColor,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget progressCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            AppTheme.primaryColor,
+            AppTheme.secondaryColor,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(26),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Progresso da rotina',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '$completedSteps de ${steps.length} concluídas',
+            style: const TextStyle(
+              color: Colors.white70,
+            ),
+          ),
+          const SizedBox(height: 18),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 10,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget emptyState() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.checklist,
+            size: 70,
+            color: Colors.white.withValues(alpha: 0.35),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Nenhuma microetapa ainda',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textColor,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Adicione pequenos passos para começar.',
+            style: TextStyle(
+              color: AppTheme.mutedTextColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget stepCard(dynamic step, bool done, int index) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.05),
+        ),
+      ),
+      child: Row(
+        children: [
+          Checkbox(
+            value: done,
+            onChanged: (value) {
+              updateStep(
+                step['id'],
+                step['title'],
+                value!,
+              );
+            },
+          ),
+          Expanded(
+            child: Text(
+              step['title'],
+              style: TextStyle(
+                fontSize: 16,
+                color: done
+                    ? AppTheme.mutedTextColor
+                    : AppTheme.textColor,
+                decoration:
+                    done ? TextDecoration.lineThrough : null,
+              ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () {
+              showEditStepDialog(index);
+            },
+          ),
+          IconButton(
+            icon: const Icon(
+              Icons.delete,
+              color: AppTheme.dangerColor,
+            ),
+            onPressed: () {
+              deleteStep(step['id']);
+            },
+          ),
+        ],
       ),
     );
   }

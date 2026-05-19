@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import '../services/api_service.dart';
+import '../themes/app_theme.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -78,86 +79,171 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
-          child: SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height - 48,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 40),
-
-                const Text(
-                  'Criar Conta 🧠',
-                  style: TextStyle(
-                    fontSize: 34,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                const SizedBox(height: 10),
-
-                Text(
-                  'Comece sua jornada com o MindStep.',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[700],
-                  ),
-                ),
-
-                const SizedBox(height: 40),
-
-                TextField(
-                  controller: nameController,
-                  decoration: InputDecoration(
-                    labelText: 'Nome',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                TextField(
-                  controller: emailController,
-                  decoration: InputDecoration(
-                    labelText: 'E-mail',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                TextField(
-                  controller: passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: 'Senha',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 30),
-
-                SizedBox(
-                  width: double.infinity,
-                  height: 55,
-                  child: ElevatedButton(
-                    onPressed: isLoading ? null : registerUser,
-                    child: Text(
-                      isLoading ? 'Cadastrando...' : 'Cadastrar',
-                      style: const TextStyle(fontSize: 18),
-                    ),
-                  ),
-                ),
+                const SizedBox(height: 18),
+                backButton(),
+                const SizedBox(height: 22),
+                header(),
+                const SizedBox(height: 34),
+                registerCard(),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget backButton() {
+    return IconButton(
+      onPressed: () => Navigator.pop(context),
+      icon: const Icon(Icons.arrow_back),
+      style: IconButton.styleFrom(
+        backgroundColor: AppTheme.surfaceColor,
+        foregroundColor: AppTheme.textColor,
+        padding: const EdgeInsets.all(14),
+      ),
+    );
+  }
+
+  Widget header() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 68,
+          height: 68,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [
+                AppTheme.primaryColor,
+                AppTheme.secondaryColor,
+              ],
+            ),
+            borderRadius: BorderRadius.circular(22),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.secondaryColor.withValues(alpha: 0.28),
+                blurRadius: 28,
+                offset: const Offset(0, 12),
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.add_task,
+            color: Colors.white,
+            size: 36,
+          ),
+        ),
+        const SizedBox(height: 24),
+        const Text(
+          'Criar conta',
+          style: TextStyle(
+            fontSize: 36,
+            fontWeight: FontWeight.w800,
+            color: AppTheme.textColor,
+            letterSpacing: -1,
+          ),
+        ),
+        const SizedBox(height: 10),
+        const Text(
+          'Comece a organizar suas rotinas em pequenos passos.',
+          style: TextStyle(
+            fontSize: 16,
+            color: AppTheme.mutedTextColor,
+            height: 1.5,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget registerCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.06),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Dados de acesso',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textColor,
+            ),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'Preencha as informações para criar sua conta.',
+            style: TextStyle(
+              fontSize: 14,
+              color: AppTheme.mutedTextColor,
+            ),
+          ),
+          const SizedBox(height: 24),
+          TextField(
+            controller: nameController,
+            decoration: const InputDecoration(
+              labelText: 'Nome',
+              prefixIcon: Icon(Icons.person_outline),
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: emailController,
+            keyboardType: TextInputType.emailAddress,
+            decoration: const InputDecoration(
+              labelText: 'E-mail',
+              prefixIcon: Icon(Icons.email_outlined),
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: passwordController,
+            obscureText: true,
+            decoration: const InputDecoration(
+              labelText: 'Senha',
+              prefixIcon: Icon(Icons.lock_outline),
+            ),
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: ElevatedButton(
+              onPressed: isLoading ? null : registerUser,
+              child: isLoading
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text(
+                      'Cadastrar',
+                      style: TextStyle(fontSize: 17),
+                    ),
+            ),
+          ),
+        ],
       ),
     );
   }
