@@ -6,8 +6,8 @@ import 'package:http/http.dart' as http;
 import '../services/api_service.dart';
 import '../themes/app_theme.dart';
 import 'create_routine_screen.dart';
-import 'routine_detail_screen.dart';
 import 'login_screen.dart';
+import 'routine_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,17 +21,17 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isLoading = true;
 
   Future<void> logout() async {
-  await ApiService.clearSession();
+    await ApiService.clearSession();
 
-  if (!mounted) return;
+    if (!mounted) return;
 
-  Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(
-      builder: (context) => const LoginScreen(),
-    ),
-  );
-}
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const LoginScreen(),
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -249,9 +249,11 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 header(),
-                const SizedBox(height: 28),
+                const SizedBox(height: 24),
+                progressDashboardCard(),
+                const SizedBox(height: 20),
                 summaryCard(),
-                const SizedBox(height: 28),
+                const SizedBox(height: 24),
                 const Text(
                   'Minhas rotinas',
                   style: TextStyle(
@@ -286,104 +288,175 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget header() {
-  return Row(
-    children: [
-      Container(
-        width: 54,
-        height: 54,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [
-              AppTheme.primaryColor,
-              AppTheme.secondaryColor,
+    return Row(
+      children: [
+        Container(
+          width: 54,
+          height: 54,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [
+                AppTheme.primaryColor,
+                AppTheme.secondaryColor,
+              ],
+            ),
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: const Icon(
+            Icons.psychology_alt,
+            color: Colors.white,
+            size: 30,
+          ),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Olá, ${ApiService.userName ?? 'usuário'} 👋',
+                style: const TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textColor,
+                ),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Organize sua mente, um passo de cada vez.',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppTheme.mutedTextColor,
+                ),
+              ),
             ],
           ),
-          borderRadius: BorderRadius.circular(18),
         ),
-        child: const Icon(
-          Icons.psychology_alt,
-          color: Colors.white,
-          size: 30,
+        IconButton(
+          onPressed: logout,
+          icon: const Icon(Icons.logout),
+          style: IconButton.styleFrom(
+            backgroundColor: AppTheme.surfaceColor,
+            foregroundColor: AppTheme.textColor,
+            padding: const EdgeInsets.all(14),
+          ),
         ),
-      ),
+      ],
+    );
+  }
 
-      const SizedBox(width: 14),
-
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Olá, ${ApiService.userName ?? 'usuário'} 👋',
-              style: const TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textColor,
-              ),
-            ),
-            SizedBox(height: 4),
-            Text(
-              'Organize sua mente, um passo de cada vez.',
-              style: TextStyle(
-                fontSize: 14,
-                color: AppTheme.mutedTextColor,
-              ),
-            ),
-          ],
-        ),
-      ),
-
-      IconButton(
-        onPressed: logout,
-        icon: const Icon(Icons.logout),
-        style: IconButton.styleFrom(
-          backgroundColor: AppTheme.surfaceColor,
-          foregroundColor: AppTheme.textColor,
-          padding: const EdgeInsets.all(14),
-        ),
-      ),
-    ],
-  );
-}
-
-  Widget summaryCard() {
+  Widget progressDashboardCard() {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            AppTheme.primaryColor,
-            AppTheme.secondaryColor,
-          ],
-        ),
+        color: AppTheme.surfaceColor,
         borderRadius: BorderRadius.circular(26),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.06),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Seu painel de rotinas',
+            'Seu progresso 📈',
             style: TextStyle(
-              fontSize: 18,
-              color: Colors.white,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
+              color: AppTheme.textColor,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            routines.isEmpty
-                ? 'Crie sua primeira rotina e divida em microetapas.'
-                : 'Você tem ${routines.length} rotina(s) cadastrada(s).',
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.white70,
-            ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              progressItem('📋', '${routines.length}', routines.length == 1 ? 'rotina' : 'rotinas',),
+              const SizedBox(width: 12),
+              progressItem('✅', 'Modo', 'foco'),
+              const SizedBox(width: 12),
+              progressItem('🦾', 'Progresso', 'ativo'),
+            ],
           ),
         ],
       ),
     );
   }
+
+  Widget progressItem(String emoji, String value, String label) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppTheme.backgroundColor.withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          children: [
+            Text(
+              emoji,
+              style: const TextStyle(fontSize: 24),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: const TextStyle(
+                color: AppTheme.textColor,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: const TextStyle(
+                color: AppTheme.mutedTextColor,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget summaryCard() {
+  return Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(22),
+    decoration: BoxDecoration(
+      gradient: const LinearGradient(
+        colors: [
+          AppTheme.primaryColor,
+          AppTheme.secondaryColor,
+        ],
+      ),
+      borderRadius: BorderRadius.circular(26),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'MindStep ativo 🚀',
+          style: TextStyle(
+            fontSize: 18,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          routines.isEmpty
+              ? 'Crie sua primeira rotina e comece com pequenos passos.'
+              : 'Continue avançando uma microetapa por vez.',
+          style: const TextStyle(
+            fontSize: 14,
+            color: Colors.white70,
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
   Widget emptyState() {
     return Center(
