@@ -98,6 +98,89 @@ flutter run -d chrome
 
 ---
 
+## Endpoints da API
+
+### Autenticação
+
+#### Cadastro de usuário
+```http
+POST /register
+```
+
+Body:
+```json
+{
+  "name": "Nome do usuário",
+  "email": "usuario@email.com",
+  "password": "123456"
+}
+```
+
+#### Login
+```http
+POST /login
+```
+
+Body:
+```json
+{
+  "email": "usuario@email.com",
+  "password": "123456"
+}
+```
+
+Retorna token JWT para autenticação.
+
+---
+
+### Rotinas (rotas protegidas com JWT)
+
+#### Criar rotina
+```http
+POST /routines
+```
+
+#### Listar rotinas
+```http
+GET /routines
+```
+
+#### Atualizar rotina
+```http
+PUT /routines/:id
+```
+
+#### Excluir rotina
+```http
+DELETE /routines/:id
+```
+
+---
+
+### Microetapas (rotas protegidas com JWT)
+
+#### Criar microetapa
+```http
+POST /steps
+```
+
+#### Listar microetapas de uma rotina
+```http
+GET /steps/:routine_id
+```
+
+#### Atualizar microetapa
+```http
+PUT /steps/:id
+```
+
+#### Excluir microetapa
+```http
+DELETE /steps/:id
+```
+
+---
+
 ## Equipe de desenvolvimento
 
 | Nome | Matrícula | Curso |
