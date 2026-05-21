@@ -97,11 +97,11 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 28),
+                const SizedBox(height: 8),
                 header(),
-                const SizedBox(height: 42),
+                const SizedBox(height: 20),
                 loginCard(),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
                 footer(),
               ],
             ),
@@ -111,53 +111,37 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget header() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 130,
-          height: 130,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: AppTheme.primaryColor.withValues(alpha: 0.10),
-                blurRadius: 14,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(24),
-            child: Image.asset(
-              'assets/images/logo.png',
-              fit: BoxFit.cover,
-            ),
-          ),
+ Widget header() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Image.asset(
+        'assets/images/logo.png',
+        width: 200,
+        fit: BoxFit.contain,
+      ),
+      const SizedBox(height:  4),
+      const Text(
+        'MindStep',
+        style: TextStyle(
+          fontSize: 38,
+          fontWeight: FontWeight.w800,
+          color: AppTheme.textColor,
+          letterSpacing: -1,
         ),
-        const SizedBox(height: 26),
-        const Text(
-          'MindStep',
-          style: TextStyle(
-            fontSize: 38,
-            fontWeight: FontWeight.w800,
-            color: AppTheme.textColor,
-            letterSpacing: -1,
-          ),
+      ),
+      const SizedBox(height: 10),
+      const Text(
+        'Transforme tarefas grandes em pequenos passos possíveis.',
+        style: TextStyle(
+          fontSize: 16,
+          color: AppTheme.mutedTextColor,
+          height: 1.5,
         ),
-        const SizedBox(height: 10),
-        const Text(
-          'Transforme tarefas grandes em pequenos passos possíveis.',
-          style: TextStyle(
-            fontSize: 16,
-            color: AppTheme.mutedTextColor,
-            height: 1.5,
-          ),
-        ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
+}
 
   Widget loginCard() {
     return Container(
