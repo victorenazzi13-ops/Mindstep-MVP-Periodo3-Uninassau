@@ -113,6 +113,76 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
     }
   }
 
+  void startFocusMode() {
+    final pendingSteps = steps.where((step) {
+      return !isStepDone(step);
+    }).toList();
+
+    if (pendingSteps.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Todas as microetapas já foram concluídas 🎉'),
+        ),
+      );
+      return;
+    }
+
+    showFocusDialog(pendingSteps, 0);
+  }
+
+  void showFocusDialog(List pendingSteps, int index) {
+    final step = pendingSteps[index];
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Microetapa ${index + 1}'),
+          content: Text(
+            step['title'],
+            style: const TextStyle(
+              fontSize: 18,
+              color: AppTheme.textColor,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Fechar'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(context);
+
+                await updateStep(
+                  step['id'],
+                  step['title'],
+                  true,
+                );
+
+                if (!mounted) return;
+
+                if (index + 1 < pendingSteps.length) {
+                  showFocusDialog(pendingSteps, index + 1);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Modo foco concluído 🚀'),
+                    ),
+                  );
+                }
+              },
+              child: const Text('Concluir etapa'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void showAddStepDialog() {
     final controller = TextEditingController();
 
@@ -321,6 +391,16 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
               minHeight: 10,
             ),
           ),
+          const SizedBox(height: 18),
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton.icon(
+              onPressed: startFocusMode,
+              icon: const Icon(Icons.psychology_alt),
+              label: const Text('Iniciar modo foco'),
+            ),
+          ),
         ],
       ),
     );
@@ -385,11 +465,8 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
               step['title'],
               style: TextStyle(
                 fontSize: 16,
-                color: done
-                    ? AppTheme.mutedTextColor
-                    : AppTheme.textColor,
-                decoration:
-                    done ? TextDecoration.lineThrough : null,
+                color: done ? AppTheme.mutedTextColor : AppTheme.textColor,
+                decoration: done ? TextDecoration.lineThrough : null,
               ),
             ),
           ),
