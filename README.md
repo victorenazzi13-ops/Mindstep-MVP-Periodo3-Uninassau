@@ -1,17 +1,19 @@
 # MindStep
 
-MindStep é um aplicativo desenvolvido para auxiliar pessoas neurodivergentes, especialmente pessoas com TDAH, na organização da rotina por meio da divisão de tarefas em microetapas.
+MindStep é um aplicativo desenvolvido para auxiliar pessoas que enfrentam dificuldades com organização, foco e sobrecarga diante de tarefas complexas, utilizando a divisão de atividades em microetapas.
 
 Projeto acadêmico desenvolvido para as disciplinas de:
 
 - Desenvolvimento para Dispositivos Móveis
-- Back-End
+- Back-End Frameworks
+
+---
 
 ## Objetivo
 
-A proposta do aplicativo é reduzir a sobrecarga causada por tarefas complexas, transformando atividades maiores em pequenas ações mais simples e executáveis.
+A proposta do aplicativo é reduzir a ansiedade e a sobrecarga causadas por tarefas complexas, transformando atividades maiores em pequenas ações mais simples e executáveis.
 
-Exemplo:
+### Exemplo
 
 Ao invés de:
 
@@ -22,11 +24,13 @@ Estudar Backend
 o usuário pode dividir em:
 
 ```txt
-- Abrir notebook
-- Abrir VS Code
-- Revisar Node.js
-- Testar endpoints
+Abrir notebook
+Abrir VS Code
+Revisar Node.js
+Testar endpoints
 ```
+
+A ideia central do MindStep é tornar tarefas grandes mais acessíveis por meio de pequenos passos, incentivando foco, consistência e produtividade.
 
 ---
 
@@ -49,8 +53,8 @@ o usuário pode dividir em:
 
 ```txt
 mindstep/
- ┣ frontend/
- ┗ backend/
+┣ frontend/
+┗ backend/
 ```
 
 ---
@@ -59,22 +63,22 @@ mindstep/
 
 - Cadastro de usuário
 - Login com autenticação JWT
+- Persistência de sessão
+- Logout
 - CRUD de rotinas
 - CRUD de microetapas
-- Proteção de rotas
-- Persistência com MySQL
+- Dashboard de progresso
+- Barra de progresso por rotina
+- Modo foco para execução passo a passo
+- Frases motivacionais aleatórias durante o foco
+- Confete ao concluir uma rotina
+- Proteção de rotas autenticadas
+- Separação de dados por usuário
+- Persistência com banco de dados MySQL
 
 ---
 
 ## Como executar
-
-### Frontend
-
-```bash
-cd frontend
-flutter pub get
-flutter run -d chrome
-```
 
 ### Backend
 
@@ -84,8 +88,29 @@ npm install
 npm run dev
 ```
 
+### Frontend
+
+```bash
+cd frontend
+flutter pub get
+flutter run -d chrome
+```
+
 ---
 
-## Autores
+## Equipe de desenvolvimento
 
-Projeto acadêmico desenvolvido por grupo da disciplina.
+| Nome | Matrícula | Curso |
+|------|----------|-------|
+| Anthony Vasconcelos Menezes de Oliveira | 16037641 | ADS |
+| Denisson Victor Santos Santana | 16037458 | ADS |
+| João Victor de Oliveira Alves | 16037240 | ADS |
+| Kauan Matheus Trindade Nascimento | 16037603 | ADS |
+| Natanael Rosa Santos | 16037192 | ADS |
+| Pedro Ivo Araújo Tavares | 16037531 | ADS |
+
+---
+
+## Observação
+
+Projeto acadêmico desenvolvido como atividade prática integrando desenvolvimento mobile e backend, com foco em autenticação, persistência de dados e experiência do usuário.
