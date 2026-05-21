@@ -52,29 +52,29 @@ class _LoginScreenState extends State<LoginScreen> {
       isLoading = false;
     });
 
-   if (response.statusCode == 200) {
-  final data = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
 
-  await ApiService.saveSession(
-    data['token'],
-    data['user']['name'],
-  );
+      await ApiService.saveSession(
+        data['token'],
+        data['user']['name'],
+      );
 
-  if (!mounted) return;
+      if (!mounted) return;
 
-  Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(
-      builder: (context) => const HomeScreen(),
-    ),
-  );
-} else {
-  if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const HomeScreen(),
+        ),
+      );
+    } else {
+      if (!mounted) return;
 
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text('E-mail ou senha inválidos')),
-  );
-}
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('E-mail ou senha inválidos')),
+      );
+    }
   }
 
   @override
@@ -100,7 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 28),
                 header(),
                 const SizedBox(height: 42),
-                loginCard(context),
+                loginCard(),
                 const SizedBox(height: 24),
                 footer(),
               ],
@@ -116,28 +116,24 @@ class _LoginScreenState extends State<LoginScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: 72,
-          height: 72,
+          width: 130,
+          height: 130,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [
-                AppTheme.primaryColor,
-                AppTheme.secondaryColor,
-              ],
-            ),
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.primaryColor.withValues(alpha: 0.35),
-                blurRadius: 30,
-                offset: const Offset(0, 12),
+                color: AppTheme.primaryColor.withValues(alpha: 0.10),
+                blurRadius: 14,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
-          child: const Icon(
-            Icons.psychology_alt,
-            color: Colors.white,
-            size: 40,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: Image.asset(
+              'assets/images/logo.png',
+              fit: BoxFit.cover,
+            ),
           ),
         ),
         const SizedBox(height: 26),
@@ -163,7 +159,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget loginCard(BuildContext context) {
+  Widget loginCard() {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(22),
