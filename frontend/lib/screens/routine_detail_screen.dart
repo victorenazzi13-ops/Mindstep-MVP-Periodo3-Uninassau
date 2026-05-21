@@ -1,9 +1,13 @@
 import 'dart:convert';
+import 'dart:math';
+
+import 'package:confetti/confetti.dart';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import '../services/api_service.dart';
+
 import '../themes/app_theme.dart';
 
 class RoutineDetailScreen extends StatefulWidget {
@@ -23,21 +27,49 @@ class RoutineDetailScreen extends StatefulWidget {
 class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
   List<dynamic> steps = [];
   bool isLoading = true;
+  late ConfettiController confettiController;
+
+  final List<String> motivationalMessages = [
+  'Excelente. Um passo de cada vez 🚀',
+  'Você está avançando 💙',
+  'Pequeno progresso ainda é progresso ✨',
+  'Continue, você já começou 🔥',
+  'Mais uma etapa vencida 🎯',
+  'Respira. Você está indo bem 🌱',
+  'Cada microetapa conta 💫',
+  'Foco no próximo passo, não no todo 🎯',
+  'Você já venceu a parte mais difícil: começar 🚀',
+  'Disciplina vence motivação 🔥',
+  'Mais perto do objetivo 💙',
+  'Consistência gera resultado 📈',
+  'Uma etapa de cada vez 🧠',
+  'Seu eu do futuro agradece 🙌',
+  'Você está construindo progresso real 🏗️',
+];
 
   @override
-  void initState() {
-    super.initState();
-    fetchSteps();
-  }
+void initState() {
+  super.initState();
+
+  confettiController = ConfettiController(
+    duration: const Duration(seconds: 3),
+  );
+
+  fetchSteps();
+}
+
+@override
+void dispose() {
+  confettiController.dispose();
+  super.dispose();
+}
 
   Future<void> fetchSteps() async {
     final url = Uri.parse('${ApiService.baseUrl}/steps/${widget.routineId}');
 
     final response = await http.get(
       url,
-      headers: {
-        'Authorization': 'Bearer ${ApiService.token}',
-      },
+      headers: {'Authorization': 'Bearer ${ApiService.token}'},
     );
 
     if (!mounted) return;
@@ -67,10 +99,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ${ApiService.token}',
       },
-      body: jsonEncode({
-        'routine_id': widget.routineId,
-        'title': title,
-      }),
+      body: jsonEncode({'routine_id': widget.routineId, 'title': title}),
     );
 
     if (response.statusCode == 201) {
@@ -87,10 +116,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ${ApiService.token}',
       },
-      body: jsonEncode({
-        'title': title,
-        'done': done,
-      }),
+      body: jsonEncode({'title': title, 'done': done}),
     );
 
     if (response.statusCode == 200) {
@@ -103,9 +129,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
 
     final response = await http.delete(
       url,
-      headers: {
-        'Authorization': 'Bearer ${ApiService.token}',
-      },
+      headers: {'Authorization': 'Bearer ${ApiService.token}'},
     );
 
     if (response.statusCode == 200) {
@@ -131,57 +155,96 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
   }
 
   void showFocusDialog(List pendingSteps, int index) {
-    final step = pendingSteps[index];
+  final step = pendingSteps[index];
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Microetapa ${index + 1}'),
-          content: Text(
-            step['title'],
-            style: const TextStyle(
-              fontSize: 18,
-              color: AppTheme.textColor,
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (dialogContext) {
+      return AlertDialog(
+        title: Text('Microetapa ${index + 1}'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              step['title'],
+              style: const TextStyle(
+                fontSize: 18,
+                color: AppTheme.textColor,
+              ),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Fechar'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                Navigator.pop(context);
-
-                await updateStep(
-                  step['id'],
-                  step['title'],
-                  true,
-                );
-
-                if (!mounted) return;
-
-                if (index + 1 < pendingSteps.length) {
-                  showFocusDialog(pendingSteps, index + 1);
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Modo foco concluído 🚀'),
-                    ),
-                  );
-                }
-              },
-              child: const Text('Concluir etapa'),
+            const SizedBox(height: 14),
+            Text(
+              motivationalMessages[
+                  Random().nextInt(motivationalMessages.length)],
+              style: const TextStyle(
+                fontSize: 14,
+                color: AppTheme.mutedTextColor,
+                fontStyle: FontStyle.italic,
+              ),
             ),
           ],
-        );
-      },
-    );
-  }
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+            },
+            child: const Text('Fechar'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+
+              await updateStep(
+                step['id'],
+                step['title'],
+                true,
+              );
+
+              if (!mounted) return;
+
+              if (index + 1 < pendingSteps.length) {
+                Future.delayed(const Duration(milliseconds: 700), () {
+                  if (!mounted) return;
+                  showFocusDialog(pendingSteps, index + 1);
+                });
+              } else {
+                Future.delayed(const Duration(milliseconds: 700), () {
+                  if (!mounted) return;
+
+                  confettiController.play();
+
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: const Text('🎉 Parabéns!'),
+                        content: const Text(
+                          'Você concluiu toda a rotina!',
+                        ),
+                        actions: [
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: const Text('Fechar'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                });
+              }
+            },
+            child: const Text('Concluir etapa'),
+          ),
+        ],
+      );
+    },
+  );
+}
 
   void showAddStepDialog() {
     final controller = TextEditingController();
@@ -220,9 +283,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
   }
 
   void showEditStepDialog(int index) {
-    final controller = TextEditingController(
-      text: steps[index]['title'],
-    );
+    final controller = TextEditingController(text: steps[index]['title']);
 
     showDialog(
       context: context,
@@ -277,52 +338,70 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: showAddStepDialog,
-        child: const Icon(Icons.add),
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              topBar(),
-              const SizedBox(height: 24),
-              progressCard(),
-              const SizedBox(height: 24),
-              const Text(
-                'Microetapas',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textColor,
+Widget build(BuildContext context) {
+  return Scaffold(
+    floatingActionButton: FloatingActionButton(
+      onPressed: showAddStepDialog,
+      child: const Icon(Icons.add),
+    ),
+    body: Stack(
+      children: [
+        SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                topBar(),
+                const SizedBox(height: 24),
+                progressCard(),
+                const SizedBox(height: 24),
+                const Text(
+                  'Microetapas',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textColor,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : steps.isEmpty
-                        ? emptyState()
-                        : ListView.builder(
-                            itemCount: steps.length,
-                            itemBuilder: (context, index) {
-                              final step = steps[index];
-                              final done = isStepDone(step);
+                const SizedBox(height: 16),
+                Expanded(
+                  child: isLoading
+                      ? const Center(
+                          child: CircularProgressIndicator(),
+                        )
+                      : steps.isEmpty
+                          ? emptyState()
+                          : ListView.builder(
+                              itemCount: steps.length,
+                              itemBuilder: (context, index) {
+                                final step = steps[index];
+                                final done = isStepDone(step);
 
-                              return stepCard(step, done, index);
-                            },
-                          ),
-              ),
-            ],
+                                return stepCard(step, done, index);
+                              },
+                            ),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-    );
-  }
+
+        Align(
+          alignment: Alignment.topCenter,
+          child: ConfettiWidget(
+            confettiController: confettiController,
+            blastDirectionality: BlastDirectionality.explosive,
+            shouldLoop: false,
+            emissionFrequency: 0.05,
+            numberOfParticles: 25,
+            gravity: 0.2,
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
   Widget topBar() {
     return Row(
@@ -358,10 +437,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            AppTheme.primaryColor,
-            AppTheme.secondaryColor,
-          ],
+          colors: [AppTheme.primaryColor, AppTheme.secondaryColor],
         ),
         borderRadius: BorderRadius.circular(26),
       ),
@@ -379,17 +455,12 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
           const SizedBox(height: 8),
           Text(
             '$completedSteps de ${steps.length} concluídas',
-            style: const TextStyle(
-              color: Colors.white70,
-            ),
+            style: const TextStyle(color: Colors.white70),
           ),
           const SizedBox(height: 18),
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 10,
-            ),
+            child: LinearProgressIndicator(value: progress, minHeight: 10),
           ),
           const SizedBox(height: 18),
           SizedBox(
@@ -428,9 +499,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
           const SizedBox(height: 8),
           const Text(
             'Adicione pequenos passos para começar.',
-            style: TextStyle(
-              color: AppTheme.mutedTextColor,
-            ),
+            style: TextStyle(color: AppTheme.mutedTextColor),
           ),
         ],
       ),
@@ -444,20 +513,14 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
       decoration: BoxDecoration(
         color: AppTheme.surfaceColor,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.05),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Row(
         children: [
           Checkbox(
             value: done,
             onChanged: (value) {
-              updateStep(
-                step['id'],
-                step['title'],
-                value!,
-              );
+              updateStep(step['id'], step['title'], value!);
             },
           ),
           Expanded(
@@ -477,10 +540,7 @@ class _RoutineDetailScreenState extends State<RoutineDetailScreen> {
             },
           ),
           IconButton(
-            icon: const Icon(
-              Icons.delete,
-              color: AppTheme.dangerColor,
-            ),
+            icon: const Icon(Icons.delete, color: AppTheme.dangerColor),
             onPressed: () {
               deleteStep(step['id']);
             },
