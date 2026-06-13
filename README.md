@@ -4,8 +4,8 @@ MindStep é um aplicativo desenvolvido para auxiliar pessoas que enfrentam dific
 
 Projeto acadêmico desenvolvido para as disciplinas de:
 
-- Desenvolvimento para Dispositivos Móveis
-- Back-End Frameworks
+* Desenvolvimento para Dispositivos Móveis
+* Back-End Frameworks
 
 ---
 
@@ -34,65 +34,180 @@ A ideia central do MindStep é tornar tarefas grandes mais acessíveis por meio 
 
 ---
 
-## Tecnologias utilizadas
+## Telas do Sistema
 
-### Frontend
-- Flutter
-- Dart
+### Login
 
-### Backend
-- Node.js
-- Express
-- MySQL
-- JWT
-- bcryptjs
+Tela responsável pela autenticação dos usuários.
+
+### Dashboard
+
+Visualização do progresso geral do usuário.
+
+### Rotinas
+
+Gerenciamento das rotinas cadastradas.
+
+### Microetapas
+
+Divisão das tarefas em pequenas ações executáveis.
+
+> As imagens das telas podem ser adicionadas futuramente na pasta `docs/`.
 
 ---
 
-## Estrutura do projeto
+## Tecnologias Utilizadas
+
+### Frontend
+
+* Flutter
+* Dart
+
+### Backend
+
+* Node.js
+* Express
+* MySQL
+* JWT (JSON Web Token)
+* bcryptjs
+
+---
+
+## Arquitetura
+
+O projeto segue uma arquitetura cliente-servidor:
+
+```txt
+Flutter (Frontend)
+        ↓
+API REST (Node.js + Express)
+        ↓
+      MySQL
+```
+
+A comunicação é realizada através de requisições HTTP para uma API REST.
+
+A autenticação utiliza JWT para garantir que cada usuário tenha acesso apenas aos seus próprios dados.
+
+---
+
+## Estrutura do Projeto
 
 ```txt
 mindstep/
 ┣ frontend/
-┗ backend/
+┃ ┣ lib/
+┃ ┣ assets/
+┃ ┗ pubspec.yaml
+┃
+┣ backend/
+┃ ┣ src/
+┃ ┃ ┣ config/
+┃ ┃ ┣ controllers/
+┃ ┃ ┣ middlewares/
+┃ ┃ ┣ routes/
+┃ ┃ ┗ server.js
+┃ ┗ package.json
+┃
+┗ README.md
 ```
 
 ---
 
 ## Funcionalidades
 
-- Cadastro de usuário
-- Login com autenticação JWT
-- Persistência de sessão
-- Logout
-- CRUD de rotinas
-- CRUD de microetapas
-- Dashboard de progresso
-- Barra de progresso por rotina
-- Modo foco para execução passo a passo
-- Frases motivacionais aleatórias durante o foco
-- Confete ao concluir uma rotina
-- Proteção de rotas autenticadas
-- Separação de dados por usuário
-- Persistência com banco de dados MySQL
+### Autenticação
+
+* Cadastro de usuário
+* Login com autenticação JWT
+* Persistência de sessão
+* Logout
+* Proteção de rotas autenticadas
+
+### Rotinas
+
+* Criar rotina
+* Listar rotinas
+* Atualizar rotina
+* Excluir rotina
+
+### Microetapas
+
+* Criar microetapas
+* Editar microetapas
+* Excluir microetapas
+* Marcar etapas como concluídas
+
+### Dashboard
+
+* Acompanhamento de progresso
+* Barra de progresso por rotina
+* Indicadores visuais de conclusão
+
+### Experiência do Usuário
+
+* Modo foco
+* Frases motivacionais aleatórias
+* Confete ao concluir uma rotina
+* Interface intuitiva
+* Feedback visual para ações importantes
+
+### Persistência
+
+* Banco de dados MySQL
+* Separação de dados por usuário autenticado
 
 ---
 
-## Como executar
+## Diferenciais
+
+O MindStep busca oferecer uma experiência mais acessível para usuários que possuem dificuldades com organização e gerenciamento de tarefas.
+
+Entre os diferenciais estão:
+
+* Divisão de tarefas em microetapas
+* Dashboard de progresso
+* Modo foco
+* Frases motivacionais
+* Feedback visual com confete
+* Organização personalizada de rotinas
+* Persistência por usuário
+* Autenticação JWT
+* Interface simples e objetiva
+
+---
+
+## Como Executar
 
 ### Backend
+
+Instale as dependências:
 
 ```bash
 cd backend
 npm install
+```
+
+Execute o servidor:
+
+```bash
 npm run dev
 ```
 
+---
+
 ### Frontend
+
+Instale as dependências:
 
 ```bash
 cd frontend
 flutter pub get
+```
+
+Execute o projeto:
+
+```bash
 flutter run -d chrome
 ```
 
@@ -102,12 +217,14 @@ flutter run -d chrome
 
 ### Autenticação
 
-#### Cadastro de usuário
+#### Cadastro de Usuário
+
 ```http
 POST /register
 ```
 
 Body:
+
 ```json
 {
   "name": "Nome do usuário",
@@ -116,12 +233,16 @@ Body:
 }
 ```
 
+---
+
 #### Login
+
 ```http
 POST /login
 ```
 
 Body:
+
 ```json
 {
   "email": "usuario@email.com",
@@ -129,71 +250,94 @@ Body:
 }
 ```
 
-Retorna token JWT para autenticação.
+Retorna um token JWT para autenticação.
 
 ---
 
-### Rotinas (rotas protegidas com JWT)
+### Rotinas
+
+Todas as rotas abaixo exigem autenticação via JWT.
 
 #### Criar rotina
+
 ```http
 POST /routines
 ```
 
 #### Listar rotinas
+
 ```http
 GET /routines
 ```
 
 #### Atualizar rotina
+
 ```http
 PUT /routines/:id
 ```
 
 #### Excluir rotina
+
 ```http
 DELETE /routines/:id
 ```
 
 ---
 
-### Microetapas (rotas protegidas com JWT)
+### Microetapas
 
 #### Criar microetapa
+
 ```http
 POST /steps
 ```
 
 #### Listar microetapas de uma rotina
+
 ```http
 GET /steps/:routine_id
 ```
 
 #### Atualizar microetapa
+
 ```http
 PUT /steps/:id
 ```
 
 #### Excluir microetapa
+
 ```http
 DELETE /steps/:id
 ```
 
 ---
 
-## Equipe de desenvolvimento
+## Equipe de Desenvolvimento
 
-| Nome | Matrícula | Curso |
-|------|----------|-------|
-| Anthony Vasconcelos Menezes de Oliveira | 16037641 | ADS |
-| Denisson Victor Santos Santana | 16037458 | ADS |
-| João Victor de Oliveira Alves | 16037240 | ADS |
-| Kauan Matheus Trindade Nascimento | 16037603 | ADS |
-| Natanael Rosa Santos | 16037192 | ADS |
-| Pedro Ivo Araújo Tavares | 16037531 | ADS |
+| Nome                                    | Matrícula | Curso |
+| --------------------------------------- | --------- | ----- |
+| Anthony Vasconcelos Menezes de Oliveira | 16037641  | ADS   |
+| Denisson Victor Santos Santana          | 16037458  | ADS   |
+| João Victor de Oliveira Alves           | 16037240  | ADS   |
+| Kauan Matheus Trindade Nascimento       | 16037603  | ADS   |
+| Natanael Rosa Santos                    | 16037192  | ADS   |
+| Pedro Ivo Araújo Tavares                | 16037531  | ADS   |
+
+---
+
+## Melhorias Futuras
+
+* Notificações de lembretes
+* Sincronização em nuvem
+* Estatísticas avançadas
+* Compartilhamento de rotinas
+* Gamificação com conquistas
+* Aplicativo para Android e iOS
 
 ---
 
 ## Observação
 
-Projeto acadêmico desenvolvido como atividade prática integrando desenvolvimento mobile e backend, com foco em autenticação, persistência de dados e experiência do usuário.
+Projeto acadêmico desenvolvido com foco na integração entre desenvolvimento mobile e backend, aplicando conceitos de autenticação, persistência de dados, APIs REST e experiência do usuário.
+
+O MindStep foi criado com o objetivo de tornar tarefas complexas mais simples, acessíveis e menos estressantes para seus usuários.
